@@ -1,27 +1,45 @@
 /*
- * $Id: sieve.c,v 1.5 2012/05/01 06:00:29 urs Exp $
+ * $Id: sieve.c,v 1.6 2012/05/01 06:01:37 urs Exp $
  */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
-
-/* The sieve is a bit array with one bit for each odd number above 2,
- * i.e. bit i is for 2 * i + 3.  We provide space for 5000 flags,
- * i.e. for prime numbers up to 4999 * 2 + 3 = 10001.
- */
-#define MAX 5000
 
 static char *alloc(unsigned int n);
 static void set(char *s, unsigned int n);
 static int test(const char *s, unsigned int n);
 static int sieve(char *s, unsigned int n);
 
-int main(void)
+static void usage(const char *name)
 {
-	unsigned int n = MAX;
+	fprintf(stderr, "Usage: %s [-v] number\n", name);
+}
+
+int main(int argc, char **argv)
+{
+	char *name = argv[0];
+	int verbose = 0;
 	int count;
+	unsigned int n, i;
 	char *s;
+
+	if (argc > 1 && strcmp(argv[1], "-v") == 0) {
+		verbose = 1;
+		argc--, argv++;
+	}
+	if (argc != 2) {
+		usage(name);
+		exit(1);
+	}
+
+	/* The sieve is a bit array with one bit for each odd number n
+	 * above 2, i.e. bit i is for n = 2 * i + 3.  Thus, we need
+	 * (n-3)/2 + 1 bits to find primes up to and including n.
+	 */
+	n = atoi(argv[1]);
+	n = (n - 3) / 2 + 1;
 
 	if (!(s = alloc(n))) {
 		perror("malloc");
@@ -29,6 +47,12 @@ int main(void)
 	}
 	count = sieve(s, n);
 	printf("n = %d\n", count);
+	if (verbose) {
+		puts("2");
+		for (i = 0; i < n; i++)
+			if (!test(s, i))
+				printf("%d\n", 2 * i + 3);
+	}
 	free(s);
 
 	return 0;
