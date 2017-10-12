@@ -1,0 +1,6 @@
+The Sieve of Eratosthenes.
+
+Find all prime numbers up to the minimum of
+* 16 times the size of available memory in bytes
+* twice the maximum value of the largest integer type
+  of your C implementation.
